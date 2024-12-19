@@ -6,8 +6,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 public class Server implements Runnable{
+	
+	private List<ConnectionHandler> connections;
 
 	private int PORT = 9999;
 	@Override
@@ -17,6 +20,8 @@ public class Server implements Runnable{
 			ServerSocket server = new ServerSocket(PORT);
 			// This waits for the client connection and accepts it 
 			Socket client = server.accept();
+			ConnectionHandler handler = new ConnectionHandler(client);
+			connections.add(handler);
 			
 		} catch (IOException e) {
 			// Handle this later
@@ -42,6 +47,8 @@ public class Server implements Runnable{
 			
 		}
 
+		//This overrides the runnable class and defines the method that 
+		// will be carried out by each thread.
 		@Override
 		public void run() {
 			
@@ -57,6 +64,7 @@ public class Server implements Runnable{
 				out.println("Please enter a nickname");
 				// assigns the variable the value of the line read from the client
 				nickname = in.readLine();
+				System.out.println(nickname + "connected");
 				
 				
 			} catch (IOException e) {
@@ -65,6 +73,24 @@ public class Server implements Runnable{
 				
 			}
 			
+			
+			
+		}
+		
+		public void broadcast(String message) {
+			
+			for (ConnectionHandler ch : connections) {
+				
+				if(ch != null) {
+					ch.sendMessage(message);
+				}
+			}
+		}
+		
+		
+		public void sendMessage(String message) {
+			
+			System.out.println(message);
 		}
 		
 		
