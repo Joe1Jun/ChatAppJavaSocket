@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.util.List;
 
 public class Server implements Runnable{
-	
+	//Will need to be instatiated at some point
 	private List<ConnectionHandler> connections;
 
 	private int PORT = 9999;
@@ -20,7 +20,9 @@ public class Server implements Runnable{
 			ServerSocket server = new ServerSocket(PORT);
 			// This waits for the client connection and accepts it 
 			Socket client = server.accept();
+			// This creates a new instance of the connection handler for each client that connects to the server
 			ConnectionHandler handler = new ConnectionHandler(client);
+			//This adds that connection to array of connections
 			connections.add(handler);
 			
 		} catch (IOException e) {
@@ -40,7 +42,7 @@ public class Server implements Runnable{
 		// To print information our
 		private PrintWriter out;
 		
-		private String nickname;
+		private String name;
 		
 		public ConnectionHandler(Socket client) {
 			this.client = client;
@@ -63,8 +65,22 @@ public class Server implements Runnable{
 				// ****Add edge cases etc to make this more robust****
 				out.println("Please enter a nickname");
 				// assigns the variable the value of the line read from the client
-				nickname = in.readLine();
-				System.out.println(nickname + "connected");
+				name = in.readLine();
+				// This will be displayed for that instance of the thread
+				System.out.println(name + "connected");
+				// This will be broadcast and will be seen by all threads connected
+				broadcast(name + "joined the chat");
+				
+				String message;
+				while((message = in.readLine()) != null) {
+					if(message.startsWith("/name" )) {
+						//handle this
+					}else if(message.startsWith("/q")) {
+						// client can quit
+					}else {
+						broadcast(name + " : " + message);
+					}
+				}
 				
 				
 			} catch (IOException e) {
@@ -77,6 +93,8 @@ public class Server implements Runnable{
 			
 		}
 		
+		//This will broadcast a message to all client currently connected
+		// This will loop through the connection arrayList and send the message using the command line
 		public void broadcast(String message) {
 			
 			for (ConnectionHandler ch : connections) {
