@@ -10,7 +10,7 @@ public class Client implements Runnable{
 	private Socket client;
 	private BufferedReader in;
 	private PrintWriter out;
-	
+	private boolean done = false;
 	
 	@Override
 	public void run() {
@@ -25,11 +25,86 @@ public class Client implements Runnable{
 			// Initialises the input stream for receiving data from the server
 			// Wraps the socket's input stream with InputStreamReader and BufferedReader for efficient reading of character streams
 			in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-			
+		    // Create a new instance of the InputHandler class to handle user input
+			InputHandler inputHandler = new InputHandler();
+			// Create a new thread to run the InputHandler
+		    // This allows user input to be handled concurrently with receiving messages from the server
+			Thread t = new Thread(inputHandler);
+			t.start();
+			// Continuously read messages from the server
+		    // The server's messages are read line-by-line and printed to the console
+		    
+			String message;
+			while((message = in.readLine()) != null) {
+				System.out.println(message);
+			}
 			
 		} catch (IOException e) {
+			 // Handle any exceptions that occur while reading user input
+            e.printStackTrace();
+          // Clean up resources and terminate the client
+            shutdown();
+		}
+		
+	}
+	
+	public void shutdown() {
+		done  = true;
+		
+		try {
+			
+			in.close();
+			out.close();
+			if(!client.isClosed()) {
+				client.close();
+			}
+		} catch (Exception e) {
 			// TODO: handle exception
 		}
+		
+	}
+	
+	class InputHandler implements Runnable {
+		
+		
+		
+
+		@Override
+		public void run() {
+			
+			try {
+				// Create a BufferedReader to read user input from the console
+				BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
+				
+				// Loop continuously until the done flag is set to true
+				while(!done) {
+					 // Read a line of input from the user
+					String message = inReader.readLine();
+					// If the user inputs the "/q" command, initiate a shutdown
+					if(message.equals("/q")) {
+						// Close the console input reader
+						inReader.close();
+						 // Call the shutdown method to terminate the connection
+						shutdown();
+					} else {
+						out.println(message);
+					}
+					
+				}
+				
+				
+				
+			} catch (Exception e) {
+				 // Handle any exceptions that occur while reading user input
+                e.printStackTrace();
+                shutdown();
+			}
+			
+		}
+		
+		
+		
+		
 		
 	}
 	
