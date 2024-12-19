@@ -5,24 +5,33 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server implements Runnable{
 	
 	private List<ConnectionHandler> connections;
 	private ServerSocket server;
 	private boolean done;
+	private ExecutorService pool;
 	
 	public Server () {
 		connections = new ArrayList<>();
 		done = false;
 	}
 
-	private int PORT = 9999;
+	private int PORT = 13;
 	@Override
 	public void run() {
 		try {
 			// This creates a server socket bound to a specific port
 			 server = new ServerSocket(PORT);
+			 // initialise threadPool
+			 // Cached thread pool doesnt use a fixed amount of threads and can 
+			 // expand dynamically based on load.
+			 // If threads become idle they are terminated after a default length of time
+			 // Therefore the amount of threads dont need to be defined
+			 pool = Executors.newCachedThreadPool();
 			 while(!done) {
 			// This waits for the client connection and accepts it 
 			Socket client = server.accept();
@@ -30,9 +39,11 @@ public class Server implements Runnable{
 			ConnectionHandler handler = new ConnectionHandler(client);
 			//This adds that connection to array of connections
 			connections.add(handler);
+			pool.execute(handler);
+			
 			 }
-		} catch (IOException e) {
-			// Handle this later
+		} catch (Exception e) {
+			shutdown();
 		}
 		
 		
@@ -137,6 +148,7 @@ public class Server implements Runnable{
 					}else if(message.startsWith("/q")) {
 						// If the message is the "/q" command, allow the client to quit the chat
 						
+						broadcast(name + " left the chat !");
 					}else {
 						 // For all other messages, broadcast the message to all connected clients
 						broadcast(name + " : " + message);
@@ -145,7 +157,7 @@ public class Server implements Runnable{
 				
 				
 			} catch (IOException e) {
-				// TODO: handle exception
+				shutdown();
 				
 				
 			}
@@ -170,6 +182,7 @@ public class Server implements Runnable{
 				// Close the output stream (used to send messages to the client)
 				out.close();
 				// Check if the client's socket is still open
+				// This avoids redunant operation if the client connection is already closed
 				if(!client.isClosed()) {
 					// Close the client socket, disconnecting it from the server
 					client.close();
@@ -185,5 +198,7 @@ public class Server implements Runnable{
 		
 		
 	}
+	
+	
 
 }
