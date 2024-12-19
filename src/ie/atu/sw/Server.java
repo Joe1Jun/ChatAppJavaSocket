@@ -10,9 +10,11 @@ public class Server implements Runnable{
 	
 	private List<ConnectionHandler> connections;
 	private ServerSocket server;
+	private boolean done;
 	
 	public Server () {
 		connections = new ArrayList<>();
+		done = false;
 	}
 
 	private int PORT = 9999;
@@ -21,13 +23,14 @@ public class Server implements Runnable{
 		try {
 			// This creates a server socket bound to a specific port
 			 server = new ServerSocket(PORT);
+			 while(!done) {
 			// This waits for the client connection and accepts it 
 			Socket client = server.accept();
 			// This creates a new instance of the connection handler for each client that connects to the server
 			ConnectionHandler handler = new ConnectionHandler(client);
 			//This adds that connection to array of connections
 			connections.add(handler);
-			
+			 }
 		} catch (IOException e) {
 			// Handle this later
 		}
@@ -51,10 +54,25 @@ public class Server implements Runnable{
 	}
     
     public void shutdown() {
+    	// Notify all clients about the shutdown
+        broadcast("Server is shutting down. Please disconnect.");
     	
-    	if(!server.isClosed()) {
-    		server.close();
-    	}
+    	try {
+    		// Close the server socket to stop accepting new connections
+    		done = true;
+        	if(!server.isClosed()) {
+        		server.close();
+        	}
+        	// Close each client connection
+        	for(ConnectionHandler ch : connections) {
+        		ch.shutdown();
+        	}
+        	 System.out.println("Server has been shut down.");
+    		
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+    	
     	
     }
 	
@@ -142,6 +160,27 @@ public class Server implements Runnable{
 		public void sendMessage(String message) {
 			
 			out.println(message);
+		}
+		
+		public void shutdown() {
+			
+			try {
+				// Close the input stream (used to receive messages from the client)
+				in.close();
+				// Close the output stream (used to send messages to the client)
+				out.close();
+				// Check if the client's socket is still open
+				if(!client.isClosed()) {
+					// Close the client socket, disconnecting it from the server
+					client.close();
+					
+				}
+				
+			} catch (IOException e) {
+				// Handle any exceptions that occur during the shutdown process
+		        // This could be caused by issues while closing streams or the socket
+			}
+			
 		}
 		
 		
