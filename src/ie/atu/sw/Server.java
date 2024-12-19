@@ -20,7 +20,7 @@ public class Server implements Runnable{
 		done = false;
 	}
 
-	private int PORT = 13;
+	private int PORT = 9999;
 	@Override
 	public void run() {
 		try {
@@ -197,6 +197,11 @@ public class Server implements Runnable{
 		}
 		
 		
+	}
+	
+	public static void main(String[] args) {
+		Server server = new Server();
+		server.run();
 	}
 	
 	
