@@ -11,14 +11,18 @@ public class Client implements Runnable{
 	private BufferedReader in;
 	private PrintWriter out;
 	private boolean done = false;
+	private int port;
 	
+	public Client(int port) {
+		this.port = port;
+	}
 	@Override
 	public void run() {
 		
 		try {
 			// Create a new socket and connect it to the specified hostname and port
             // This establishes a TCP connection between the client and the server
-			client = new Socket("127.0.0.1", PORT);
+			client = new Socket("127.0.0.1", port);
 			// Initialises the output stream for sending data to the server
 			// The 'true' parameter enables auto-flushing, so there is no need to call flush manually after each println
 			out = new PrintWriter(client.getOutputStream(), true);
@@ -108,10 +112,10 @@ public class Client implements Runnable{
 		
 	}
 	
-	public static void main(String[] args) {
-		Client client = new Client();
-		client.run();
-	}
+//	public static void main(String[] args) {
+//		Client client = new Client();
+//		client.run();
+//	}
 	
 	
 	

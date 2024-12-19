@@ -15,17 +15,28 @@ public class Server implements Runnable{
 	private boolean done;
 	private ExecutorService pool;
 	
-	public Server () {
+	private int port ;
+	
+	public Server (int port) {
 		connections = new ArrayList<>();
 		done = false;
+		
+		this.port = port;
 	}
 
-	private int PORT = 9999;
+	
+	
+	
 	@Override
 	public void run() {
 		try {
 			// This creates a server socket bound to a specific port
-			 server = new ServerSocket(PORT);
+			
+			 
+			
+			 
+			
+			 server = new ServerSocket(port);
 			 // initialise threadPool
 			 // Cached thread pool doesnt use a fixed amount of threads and can 
 			 // expand dynamically based on load.
@@ -145,7 +156,7 @@ public class Server implements Runnable{
 						} else {
 							out.println("No name provided");
 						}
-					}else if(message.startsWith("/q")) {
+					}else if(message.equals("/q")) {
 						// If the message is the "/q" command, allow the client to quit the chat
 						
 						broadcast(name + " left the chat !");
@@ -200,8 +211,27 @@ public class Server implements Runnable{
 	}
 	
 	public static void main(String[] args) {
-		Server server = new Server();
-		server.run();
+		
+		
+		Scanner input = new Scanner(System.in);
+		
+		Menu menu = new Menu();
+		int choice = menu.start();
+		if(choice == 1) {
+			
+			
+
+			 System.out.println("Specify the port number for the server");
+			 int port  = input.nextInt();
+			 
+			 Server server = new Server(port);
+		     Client client = new Client(port);
+			server.run();
+			client.run();
+			
+		}
+		
+		
 	}
 	
 	
