@@ -1,23 +1,26 @@
 package ie.atu.sw;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
+
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
+import java.util.*;
 
 public class Server implements Runnable{
-	//Will need to be instatiated at some point
+	
 	private List<ConnectionHandler> connections;
+	private ServerSocket server;
+	
+	public Server () {
+		connections = new ArrayList<>();
+	}
 
 	private int PORT = 9999;
 	@Override
 	public void run() {
 		try {
 			// This creates a server socket bound to a specific port
-			ServerSocket server = new ServerSocket(PORT);
+			 server = new ServerSocket(PORT);
 			// This waits for the client connection and accepts it 
 			Socket client = server.accept();
 			// This creates a new instance of the connection handler for each client that connects to the server
@@ -30,7 +33,30 @@ public class Server implements Runnable{
 		}
 		
 		
+		
 	}
+	
+	
+	//This will broadcast a message to all client currently connected
+			// This will loop through the connection arrayList and send the message using the command line
+			
+    public void broadcast(String message) {
+		
+		for (ConnectionHandler ch : connections) {
+			
+			if(ch != null) {
+				ch.sendMessage(message);
+			}
+		}
+	}
+    
+    public void shutdown() {
+    	
+    	if(!server.isClosed()) {
+    		server.close();
+    	}
+    	
+    }
 	
 	
 	
@@ -72,12 +98,29 @@ public class Server implements Runnable{
 				broadcast(name + "joined the chat");
 				
 				String message;
+				// Loop continuously to handle messages from the clients
 				while((message = in.readLine()) != null) {
+					// Check if the message starts with the "/name" command for renaming the user
 					if(message.startsWith("/name" )) {
-						//handle this
+						// Split the message into two parts: the command and the new name
+						String [] messageSplit = message.split(" ", 2);
+						// If the split message contains two parts (command and new name)
+						if(messageSplit.length == 2) {
+							// Broadcast to all clients that the user has renamed themselves
+							broadcast(name + "renamed themselves to " + messageSplit[1]);
+							// Log the renaming action on the server console
+							System.out.println(name + "renamed themselves to " + messageSplit[1]);
+							// Update the user's name
+							name = messageSplit[1];
+							out.println("Successfully changed name to " + name);
+						} else {
+							out.println("No name provided");
+						}
 					}else if(message.startsWith("/q")) {
-						// client can quit
+						// If the message is the "/q" command, allow the client to quit the chat
+						
 					}else {
+						 // For all other messages, broadcast the message to all connected clients
 						broadcast(name + " : " + message);
 					}
 				}
@@ -93,22 +136,12 @@ public class Server implements Runnable{
 			
 		}
 		
-		//This will broadcast a message to all client currently connected
-		// This will loop through the connection arrayList and send the message using the command line
-		public void broadcast(String message) {
-			
-			for (ConnectionHandler ch : connections) {
-				
-				if(ch != null) {
-					ch.sendMessage(message);
-				}
-			}
-		}
+		
 		
 		
 		public void sendMessage(String message) {
 			
-			System.out.println(message);
+			out.println(message);
 		}
 		
 		
