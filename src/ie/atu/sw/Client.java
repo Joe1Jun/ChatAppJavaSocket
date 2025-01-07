@@ -4,8 +4,7 @@ import java.net.Socket;
 import java.io.*;
 
 public class Client implements Runnable{
-	// Port number on which the server is running
-	public static final int PORT = 9999;
+	
 	// Hostname of the server to connect to, set to localhost for testing on the same machine
 	private Socket client;
 	private BufferedReader in;
@@ -111,11 +110,7 @@ public class Client implements Runnable{
 		
 		
 	}
-	
-//	public static void main(String[] args) {
-//		Client client = new Client();
-//		client.run();
-//	}
+
 	
 	
 	
