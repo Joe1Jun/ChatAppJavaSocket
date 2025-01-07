@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class MenuForClient {
 
 	private Scanner input;
+	private boolean keepRunning;
 
 	public MenuForClient(Scanner input) {
 
@@ -30,7 +31,7 @@ public class MenuForClient {
 		} catch (NumberFormatException e) {
 			// Catch InputMismatchException (non-integer input) and ask the user to enter a
 			// valid choice.
-			ConsoleUtils.printError("Invalid input. Please enter a number between 1 and 6.");
+			System.out.println("Invalid input. Please enter a number between 1 and 6.");
 
 		}
 
@@ -39,7 +40,7 @@ public class MenuForClient {
 	}
 
 	private void showOptions() {
-
+		System.out.println(ConsoleColour.GREEN);
 		System.out.println("************************************************************");
 	    System.out.println("*                                                          *");
 		System.out.println("*           Cleint : Java Socket Chat App                  *");

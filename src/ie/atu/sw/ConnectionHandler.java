@@ -32,10 +32,10 @@ public class ConnectionHandler implements Runnable {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
 
             // Get client's name
-            out.println("Enter your name: ");
-            // Buffered reader reads the line in
-            clientName = in.readLine();
             
+           enterName();
+           
+           
             String message;
             while ((message = in.readLine()) != null) {
                 if (message.equals("\\q")) {
@@ -49,6 +49,7 @@ public class ConnectionHandler implements Runnable {
             
         } catch (IOException e) {
             System.out.println("Error handling client: " + e.getMessage());
+            sendMessage(clientName);
         } finally {
             closeClientConnection();
         }
@@ -57,10 +58,38 @@ public class ConnectionHandler implements Runnable {
             
             
  
+// Uses a while loop to make sure the user inputs a non null name
+    private void enterName() {
+    	while (true) {
+            out.println("Enter your name: ");
+            try {
+                clientName = in.readLine();
 
-    private void closeClientConnection() {
+                // Validate client name
+                if (clientName == null || clientName.isEmpty()) {
+                    sendMessage("Please input a proper name.");  // Send error to client
+                } else {
+                    break;  // Exit loop if valid name is entered
+                }
+            } catch (IOException e) {
+                sendMessage("Error: Unable to read name. Please try again.");
+                e.printStackTrace();
+            }
+        }
+
+        // After name is entered, broadcast that the client has entered the chat
+        server.broadcast(clientName + " has entered the chat");
+		
+	}
+
+	public void closeClientConnection() {
     	//Removes the current client from the connections list
     	server.removeClient(this);
+    	 try {
+    	        clientSocket.close();  // Close the client socket to stop communication
+    	    } catch (IOException e) {
+    	        e.printStackTrace();  // Handle the error gracefully if closing the socket fails
+    	    }
     	
 }
 

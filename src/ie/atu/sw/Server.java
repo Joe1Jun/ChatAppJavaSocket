@@ -17,16 +17,17 @@ public class Server implements Runnable{
 	private List<ConnectionHandler> clientConnections;
 	
 	private boolean keepRunning;
-	private ExecutorService pool;
-	
+	//private ExecutorService pool;
 	private int port ;
 	
 	public Server (int port) throws IOException {
+		this.port = port;
 		clientConnections = new ArrayList<>();
 		keepRunning = true;
-		pool = Executors.newVirtualThreadPerTaskExecutor();
-        server = new ServerSocket(port);
-		this.port = port;
+		//pool = Executors.newVirtualThreadPerTaskExecutor();
+		// Might have to create this in a try block?
+		server = new ServerSocket(port);
+		
 	}
 
 	
@@ -36,12 +37,17 @@ public class Server implements Runnable{
     public void run() {
         // Try-with-resources to manage the virtual thread pool
 		// Infinite loop to continuously accept and handle client connections.
+		
         while (keepRunning) {
-        	System.out.println("Server started on port " + port);
-            try {
+        	
+            try(ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor()) {
+            	
+            	
+            	System.out.println("Waiting for clients......");
                 // Waits for an incoming client connection and returns a socket representing it.
                 Socket connection = server.accept();
-                System.out.println("Client connected from " + connection.getInetAddress() + ":" + connection.getPort());
+                //Prints the client and the address they connected from 
+                System.out.println("Client connected from " + connection.getInetAddress() + ": PORT " + connection.getPort());
                 // Created a new instance of the object that handles all client connections.
                 ConnectionHandler connectionHandler = new ConnectionHandler(connection, this);
                 clientConnections.add(connectionHandler);
@@ -59,6 +65,8 @@ public class Server implements Runnable{
    // This will loop through the connection arrayList and send the message using the command line
 			
     public void broadcast(String message) {
+    	
+    	
 		
 		for (ConnectionHandler ch : clientConnections) {
 			
@@ -84,7 +92,7 @@ public class Server implements Runnable{
         	}
         	// Close each client connection
         	for(ConnectionHandler ch : clientConnections) {
-        		//ch.shutdown();
+        		ch.closeClientConnection();
         	}
         	 System.out.println("Server has been shut down.");
     		

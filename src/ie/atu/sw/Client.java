@@ -1,72 +1,80 @@
 package ie.atu.sw;
 
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
-import java.io.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Client implements Runnable{
-	
-	// Hostname of the server to connect to, set to localhost for testing on the same machine
-	private Socket client;
-	private BufferedReader in;
-	private PrintWriter out;
-	private boolean done = false;
-	private int port;
-	
-	public Client(int port) {
-		this.port = port;
-	}
-	@Override
-	public void run() {
-		
-		try {
-			// Create a new socket and connect it to the specified hostname and port
-            // This establishes a TCP connection between the client and the server
-			client = new Socket("127.0.0.1", port);
-			// Initialises the output stream for sending data to the server
-			// The 'true' parameter enables auto-flushing, so there is no need to call flush manually after each println
-			out = new PrintWriter(client.getOutputStream(), true);
-			// Initialises the input stream for receiving data from the server
-			// Wraps the socket's input stream with InputStreamReader and BufferedReader for efficient reading of character streams
-			in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-		    // Create a new instance of the InputHandler class to handle user input
-			InputHandler inputHandler = new InputHandler();
-			// Create a new thread to run the InputHandler
-		    // This allows user input to be handled concurrently with receiving messages from the server
-			Thread t = new Thread(inputHandler);
-			t.start();
-			// Continuously read messages from the server
-		    // The server's messages are read line-by-line and printed to the console
-		    
-			String message;
-			while((message = in.readLine()) != null) {
-				System.out.println(message);
-			}
-			
-		} catch (IOException e) {
-			 // Handle any exceptions that occur while reading user input
-            e.printStackTrace();
-          // Clean up resources and terminate the client
-            shutdown();
-		}
-		
-	}
-	
-	public void shutdown() {
-		done  = true;
-		
-		try {
-			
-			in.close();
-			out.close();
-			if(!client.isClosed()) {
-				client.close();
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		
-	}
+public class Client implements Runnable {
+    
+    private Socket client;
+    private BufferedReader in;
+    private PrintWriter out;
+    private boolean keepRunning;
+    private ExecutorService pool;
+    private int port;
+    
+//    
+//    //If a single thread tried to listen to server messages and wait for user input:
+//
+//While you're typing, the client would stop listening to the server.
+//If the server sends a critical message during your input (e.g., “Server is shutting down”), you’d miss it.
+
+    
+    public Client(int port) {
+        this.port = port;
+        this.keepRunning = true;
+        this.pool = Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    @Override
+    public void run() {
+        try {
+            // Establish a connection to the server
+            client = new Socket("localhost", port);
+            System.out.println("Connected to server on port " + port);
+
+            // Initialise input and output streams
+            out = new PrintWriter(client.getOutputStream(), true);
+            // 
+            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+            
+            // Start a separate thread for user input
+            pool.execute(new InputHandler());
+
+            // Listen for server messages
+            String message;
+            while (keepRunning && (message = in.readLine()) != null) {
+                System.out.println("ChatApp: " + message);
+            }
+            
+        } catch (IOException e) {
+            
+            System.err.println("Connection error. Please enter a valid port number of the server.");
+            System.err.println("");
+            
+        }
+    }
+
+    public void sendMessage(String message) {
+        if (out != null) {
+            out.println(message);
+        }
+    }
+
+    public void shutdown() {
+        keepRunning = false;
+        try {
+            in.close();
+             out.close();
+            if (client != null && !client.isClosed()) client.close();
+            pool.shutdown();
+            System.out.println("Client disconnected.");
+        } catch (IOException e) {
+            System.err.println("Error during client shutdown: " + e.getMessage());
+        }
+    }
 	
 	class InputHandler implements Runnable {
 		
@@ -80,12 +88,12 @@ public class Client implements Runnable{
 				// Create a BufferedReader to read user input from the console
 				BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
 				
-				// Loop continuously until the done flag is set to true
-				while(!done) {
+				// Loop continuously until the keepRuning flag is set to false
+				while(keepRunning) {
 					 // Read a line of input from the user
 					String message = inReader.readLine();
-					// If the user inputs the "/q" command, initiate a shutdown
-					if(message.equals("/q")) {
+					// If the user inputs the "q" command
+					if(message.equals("q")) {
 						// Close the console input reader
 						inReader.close();
 						 // Call the shutdown method to terminate the connection
