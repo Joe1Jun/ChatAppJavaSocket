@@ -43,7 +43,7 @@ public class Client implements Runnable {
             // Start a separate thread for user input
             pool.execute(new InputHandler());
 
-            // Listen for server messages
+            // The client created listens 
             String message;
             while (keepRunning && (message = in.readLine()) != null) {
                 System.out.println("ChatApp: " + message);
@@ -94,11 +94,9 @@ public class Client implements Runnable {
 					String message = inReader.readLine();
 					// If the user inputs the "q" command
 					if(message.equals("q")) {
-						// Close the console input reader
-						inReader.close();
-						 // Call the shutdown method to terminate the connection
-						shutdown();
+						break;
 					} else {
+						//Prints the message to the console
 						out.println(message);
 					}
 					

@@ -35,15 +35,18 @@ public class ConnectionHandler implements Runnable {
             
            enterName();
            
+           // This reads in each message as it sent to the server and uses 
+           // the broadcast message in the server class to broadcast the message
+           // to the 
            
             String message;
             while ((message = in.readLine()) != null) {
-                if (message.equals("\\q")) {
-                	server.broadcast(clientName + " has left the chat !");
-                	closeClientConnection();
+                if (message.equalsIgnoreCase("exit")) {
+                    server.broadcast(clientName + " has left the chat!");
+                    closeClientConnection(); // server handles closing connection
                     break;
                 }
-                server.broadcast(clientName + ": " + message);
+                server.broadcast(clientName + ": " + message);  // Broadcast messages to all clients
             }
             
             
@@ -60,6 +63,7 @@ public class ConnectionHandler implements Runnable {
  
 // Uses a while loop to make sure the user inputs a non null name
     private void enterName() {
+    	
     	while (true) {
             out.println("Enter your name: ");
             try {
