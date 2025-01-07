@@ -1,6 +1,7 @@
 package ie.atu.sw;
 
 import java.net.Socket;
+import java.util.Scanner;
 import java.io.*;
 
 public class Client implements Runnable{
@@ -110,6 +111,29 @@ public class Client implements Runnable{
 		
 		
 	}
+	
+	public static void main(String[] args) {
+		  
+		  Scanner input = new Scanner(System.in);
+			
+			MenuForClient menuForClient = new MenuForClient(input);
+			int choice;
+			try {
+				choice = menuForClient.start();
+				if(choice == 1) {
+					System.out.println("Enter port number for server");
+					int port = input.nextInt();
+					Client client = new Client(port);
+					client.run();
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+				
+			}
 
 	
 	

@@ -2,18 +2,16 @@ package ie.atu.sw;
 
 import java.util.Scanner;
 
-public class Menu {
+public class MenuForClient {
 
 	private Scanner input;
 
-	public Menu(Scanner input) {
+	public MenuForClient(Scanner input) {
 
 		this.input = input;
 	}
 
 	public int start() throws Exception {
-
-		input = new Scanner(System.in);
 
 		// The while loop will continue to run until the user selects the quit option
 		// which sets the keepRunning boolean value to false.
@@ -44,11 +42,12 @@ public class Menu {
 
 		System.out.println("************************************************************");
 	    System.out.println("*                                                          *");
-		System.out.println("*           Server : Java Socket Chat App                  *");
+		System.out.println("*           Cleint : Java Socket Chat App                  *");
 		System.out.println("*                                                          *");
 		System.out.println("************************************************************");
-		System.out.println("(1) Start the server? ");
-		System.out.println("(2) Stop the server y/n");
+		System.out.println("(1) Enter chat? ");
+		System.out.println("(2) Private chat");
+		System.out.println("(3) Save conversation");
 		System.out.print("Select Option");
 		System.out.println();
 	}
