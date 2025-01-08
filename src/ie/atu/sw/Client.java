@@ -7,143 +7,126 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Client implements Runnable {
-    
-    private Socket client;
-    private BufferedReader in;
-    private PrintWriter out;
-    private boolean keepRunning;
-    private ExecutorService pool;
-    private int port;
-    
+
+	private Socket client;
+	private BufferedReader in;
+	private PrintWriter out;
+	private boolean keepRunning;
+	private ExecutorService pool;
+	private int port;
+
 //    
 //    //If a single thread tried to listen to server messages and wait for user input:
 //
 //While you're typing, the client would stop listening to the server.
 //If the server sends a critical message during your input (e.g., “Server is shutting down”), you’d miss it.
 
-    
-    public Client(int port) {
-        this.port = port;
-        this.keepRunning = true;
-        this.pool = Executors.newVirtualThreadPerTaskExecutor();
-    }
+	public Client(int port) {
+		this.port = port;
+		this.keepRunning = true;
+		this.pool = Executors.newVirtualThreadPerTaskExecutor();
+	}
 
-    @Override
-    public void run() {
-        try {
-            // Establish a connection to the server
-            client = new Socket("localhost", port);
-            System.out.println("Connected to server on port " + port);
+	@Override
+	public void run() {
+		try (Socket socket = new Socket("localhost", port); // Auto-closeable socket
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-            // Initialise input and output streams
-            out = new PrintWriter(client.getOutputStream(), true);
-            // 
-            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            
-            // Start a separate thread for user input
-            pool.execute(new InputHandler());
+			this.client = socket; // Assign the socket to the instance variable
+			this.in = in; // Assign BufferedReader to instance variable
+			this.out = out; // Assign PrintWriter to instance variable
+			// Establish a connection to the server
 
-            // The client created listens 
-            String message;
-            while (keepRunning && (message = in.readLine()) != null) {
-                System.out.println("ChatApp: " + message);
-            }
-            
-        } catch (IOException e) {
-            
-            System.err.println("Connection error. Please enter a valid port number of the server.");
-            System.err.println("");
-            
-        }
-    }
+			System.out.println("Connected to server on port " + port);
 
-    public void sendMessage(String message) {
-        if (out != null) {
-            out.println(message);
-        }
-    }
+			// Start a separate thread for user input
+			pool.execute(new ClientHandler());
 
-    public void shutdown() {
-        keepRunning = false;
-        try {
-            in.close();
-             out.close();
-            if (client != null && !client.isClosed()) client.close();
-            pool.shutdown();
-            System.out.println("Client disconnected.");
-        } catch (IOException e) {
-            System.err.println("Error during client shutdown: " + e.getMessage());
-        }
-    }
+			// The client created listens
+			String message;
+			while (keepRunning && (message = in.readLine()) != null) {
+				System.out.println("ChatApp: " + message);
+			}
+
+		} catch (IOException e) {
+
+			System.err.println("Connection error. Please enter a valid port number of the server.");
+			System.err.println("");
+			
+
+		}
+	}
+
+	public void sendMessage(String message) {
+		if (out != null) {
+			out.println(message);
+		}
+	}
+
 	
-	class InputHandler implements Runnable {
-		
-		
-		
+
+ private class ClientHandler implements Runnable {
 
 		@Override
 		public void run() {
-			
-			try {
+
+			try (BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in))) {
 				// Create a BufferedReader to read user input from the console
-				BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
-				
+
 				// Loop continuously until the keepRuning flag is set to false
-				while(keepRunning) {
-					 // Read a line of input from the user
+				while (keepRunning) {
+					// Read a line of input from the user
 					String message = inReader.readLine();
-					// If the user inputs the "q" command
-					if(message.equals("q")) {
-						break;
-					} else {
-						//Prints the message to the console
-						out.println(message);
+					if (message.equalsIgnoreCase("exit")) {
+						System.out.println("Shutting down connection....");
+						//
+						 sendMessage("is leaving the chat...");
+						// Ensures the main loop exits
+	                     keepRunning = false; 
+						// and output streams
+						
+
 					}
-					
+
+					// Prints the message to the console
+					sendMessage(message);
 				}
-				
-				
-				
+
 			} catch (Exception e) {
-				 // Handle any exceptions that occur while reading user input
-                e.printStackTrace();
-                shutdown();
-			}
-			
-		}
-		
-		
-		
-		
-		
-	}
-	
-	public static void main(String[] args) {
-		  
-		  Scanner input = new Scanner(System.in);
-			
-			MenuForClient menuForClient = new MenuForClient(input);
-			int choice;
-			try {
-				choice = menuForClient.start();
-				if(choice == 1) {
-					System.out.println("Enter port number for server");
-					int port = input.nextInt();
-					Client client = new Client(port);
-					client.run();
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
+				// Handle any exceptions that occur while reading user input
 				e.printStackTrace();
-			}
-			
-			
 				
+
+		}
+
+	}
+	}
+
+	public static void main(String[] args) {
+
+		Scanner input = new Scanner(System.in);
+
+		MenuForClient menuForClient = new MenuForClient(input);
+		int choice;
+		try {
+			choice = menuForClient.start();
+			if (choice == 1) {
+				System.out.println("Type exit to leave the chat");
+				System.out.println("Enter port number for server");
+				int port = input.nextInt();
+				
+				
+				Client client = new Client(port);
+			
+				client.run();
 			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-	
-	
-	
-	
+	}
 
-}
+	}
+

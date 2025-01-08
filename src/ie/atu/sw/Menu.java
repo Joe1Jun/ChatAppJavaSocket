@@ -24,7 +24,8 @@ public class Menu {
 		try {
 			// Parse the user input to an Integer.
 			int choice = Integer.parseInt(userInput);
-
+             
+			
 			return choice;
 			// Catch block will print a error message to the user if they don't enter a
 			// valid input.
@@ -47,9 +48,9 @@ public class Menu {
 		System.out.println("*           Server : Java Socket Chat App                  *");
 		System.out.println("*                                                          *");
 		System.out.println("************************************************************");
-		System.out.println("(1) Start the server? ");
-		System.out.println("(2) Stop the server y/n");
-		System.out.print("Select Option");
+		System.out.println("(1) Start the server");
+		System.out.println("....Type 1 to start the server");
+		System.out.print(  "....Select Option");
 		System.out.println();
 	}
 
