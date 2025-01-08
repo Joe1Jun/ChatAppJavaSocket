@@ -103,30 +103,55 @@ public class Client implements Runnable {
 	}
 	}
 
-	public static void main(String[] args) {
+//	public static void main(String[] args) {
+//
+//		Scanner input = new Scanner(System.in);
+//
+//		MenuForClient menuForClient = new MenuForClient(input);
+//		int choice;
+//		try {
+//			choice = menuForClient.start();
+//			if (choice == 1) {
+//				System.out.println("Type exit to leave the chat");
+//				System.out.println("Enter port number for server");
+//				int port = input.nextInt();
+//				
+//				
+//				Client client = new Client(port);
+//				client.run();
+//			}
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//	}
+//
+//	}
+ 
+ 
+public static void main(String[] args) {
+Scanner input = new Scanner(System.in);
 
-		Scanner input = new Scanner(System.in);
+// Create an instance of the menu (for client actions)
+MenuForClient menuForClient = new MenuForClient(input);
+int choice;
 
-		MenuForClient menuForClient = new MenuForClient(input);
-		int choice;
-		try {
-			choice = menuForClient.start();
-			if (choice == 1) {
-				System.out.println("Type exit to leave the chat");
-				System.out.println("Enter port number for server");
-				int port = input.nextInt();
-				
-				
-				Client client = new Client(port);
-			
-				client.run();
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+try {
+   choice = menuForClient.start();
+   if (choice == 1) {
+       System.out.println("Type 'exit' to leave the chat");
 
-	}
+       // Use ClientPortHandler to get the valid port input
+       ClientPortHandler portHandler = new ClientPortHandler();
+       int port = portHandler.getPortInput();  // This will keep prompting for a valid port
 
-	}
+       // Now create the client and run it
+       Client client = new Client(port);
+       client.run();
+   }
+} catch (Exception e) {
+   e.printStackTrace();
+}
+}}
 

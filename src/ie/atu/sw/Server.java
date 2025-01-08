@@ -96,46 +96,28 @@ public class Server implements Runnable {
 	}
 
 	public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        Menu menu = new Menu(input);
+        int choice;
 
-		Scanner input = new Scanner(System.in);
-
-		Menu menu = new Menu(input);
-		int choice;
-		try {
+        try {
             choice = menu.start();
             if (choice == 1) {
-                System.out.println("Type shutdown to shutdown server");
-                
-                // Loop until valid port number is entered
-                int port = -1;
-                boolean validPort = false;
-                while (!validPort) {
-                    try {
-                        System.out.println("Enter port number for server:");
-                        port = Integer.parseInt(input.nextLine());
+                System.out.println("Type 'shutdown' to shutdown server");
 
-                        // Check if the port is valid and not already in use
-                        try (ServerSocket testSocket = new ServerSocket(port)) {
-                            validPort = true;  // If no exception is thrown, the port is valid
-                        } catch (IOException e) {
-                            System.out.println("Port " + port + " is already in use. Please enter a different port.");
-                        }
-
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid port number entered. Please enter a valid numeric port.");
-                    }
-                }
+                // Use the PortInputHandler to get a valid port number
+                ServerPortHandler portInputHandler = new ServerPortHandler();
+                int port = portInputHandler.getPortInput();
 
                 Server server = new Server(port);
                 Thread serverThread = new Thread(server);
                 serverThread.start();
 
-                // Listen for shutdown command in the main thread
                 while (true) {
                     String command = input.next();
                     if ("shutdown".equalsIgnoreCase(command)) {
                         server.shutdown();
-                        break;
+                        break; // Exit the loop and stop the program
                     }
                 }
 
@@ -148,7 +130,7 @@ public class Server implements Runnable {
             e.printStackTrace();
         }
     }
-	}
+}
 
 
 
