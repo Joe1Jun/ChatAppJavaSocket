@@ -33,16 +33,16 @@ public class Menu {
 		} catch (NumberFormatException e) {
 			// Catch InputMismatchException (non-integer input) and ask the user to enter a
 			// valid choice.
-			System.out.println("Invalid input. Please enter a number between 1 and 6.");
+			System.out.println("Invalid input");
 
 		}
 
 		return 0;
 
 	}
-
+// SHows the user options
 	private void showOptions() {
-		System.out.println(ConsoleColour.GREEN);
+		System.out.println(ConsoleColour.PURPLE_BRIGHT);
 		System.out.println("************************************************************");
 	    System.out.println("*                                                          *");
 		System.out.println("*           Server : Java Socket Chat App                  *");

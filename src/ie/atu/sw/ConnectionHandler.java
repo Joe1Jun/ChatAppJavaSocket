@@ -7,16 +7,19 @@ import java.io.PrintWriter;
 
 import java.net.Socket;
 
-// This class will handle all connection from each server type.
+// This class will handle all connection from each server type
+// Most implementation had this as a private class within server
+// This version is a bit cleaner as this class has a lot of methods.
 
 public class ConnectionHandler implements Runnable {
 
 	private Socket clientSocket;
 	private Server server;
 	private BufferedReader in;
-	// To print information out
-	private PrintWriter out;
+    private PrintWriter out;
 	private String clientName;
+
+	// Creates instance of this class with the objects passed from the Server class
 
 	public ConnectionHandler(Socket clientSocket, Server server) {
 
@@ -24,38 +27,32 @@ public class ConnectionHandler implements Runnable {
 		this.server = server;
 	}
 
-	// This 
+	// The overridden method from interface runnable
 	@Override
 	public void run() {
-		try (Socket socket = this.clientSocket; // Auto-closeable socket
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-			// This will read in the input stream from the client
-			this.in = in;
-			// This is the output stream initialised and the auto flush set to through so
-			// there is no need to manually flush the output stream
-			this.out = out;
+		try {
+			// Create streams outside try-with-resources since we need them for the instance
+			// lifetime
+			this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			this.out = new PrintWriter(clientSocket.getOutputStream(), true);
 
 			// Get client's name
-
 			enterName();
-
-			// This reads in each message as it sent to the server and uses
-			// the broadcast message in the server class to broadcast the message
-			// to the
-
+			// The server listens for messages send from all the connections via output
+			// stream in
+			// the client class.
 			String message;
+			// Messages are read in but the buffered reader unless exit is read in
+
 			while ((message = in.readLine()) != null) {
 				if (message.equalsIgnoreCase("exit")) {
-
+					// If the user types exit the close Connection method is triggered
 					closeConnection();
-
 					break;
 				}
-				server.broadcast(clientName + ": " + message); // Broadcast messages to all clients
+				server.broadcast(clientName + ": " + message);
 			}
-
 		} catch (IOException e) {
 			System.out.println("Error handling client: " + e.getMessage());
 			sendMessage(clientName);
@@ -68,11 +65,12 @@ public class ConnectionHandler implements Runnable {
 	private void enterName() {
 
 		while (true) {
+			// Writes via printwriter to the clients console
 			out.println("Enter your name: ");
 			try {
 				clientName = in.readLine();
 
-				// Validate client name
+				// If the name is empty the loop keepRunning
 				if (clientName == null || clientName.isEmpty()) {
 					sendMessage("Please input a proper name."); // Send error to client
 				} else {
@@ -95,7 +93,14 @@ public class ConnectionHandler implements Runnable {
 	}
 
 	public void closeConnection() {
-		server.removeClient(this, clientName);
-
+		try {
+			server.removeClient(this, clientName);
+			//Closes the socket which should close the input and output reader of that socket
+			if (clientSocket != null) {
+				clientSocket.close();
+			}
+		} catch (IOException e) {
+			ConsoleUtils.printError("Error closing connection");
+		}
 	}
 }

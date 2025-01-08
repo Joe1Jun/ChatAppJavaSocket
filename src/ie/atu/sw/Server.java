@@ -11,8 +11,8 @@ import java.util.concurrent.Executors;
 
 public class Server implements Runnable {
 
-	// private ServerSocket server;
-	// thread safe array list
+	
+	// Thread safe array list needed when using threads
 	private CopyOnWriteArrayList<ConnectionHandler> clientConnections = new CopyOnWriteArrayList<>();
 	private int port;
 	private boolean keepRunning;
@@ -25,7 +25,7 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
-		// Try-with-resources to manage the virtual thread pool
+		// Try-with-resources to manage the virtual thread pool and ServerSocket
 		// Infinite loop to continuously accept and handle client connections.
 		System.out.println("To shut down the server type shutdown");
 
@@ -71,8 +71,9 @@ public class Server implements Runnable {
 	}
 
 	public void removeClient(ConnectionHandler clientConnection, String name) {
-
+         // Removes the client from the array list
 		clientConnections.remove(clientConnection);
+		// Broadcasts to the whole chat that the client has left the chat
 		broadcast(name + " has left the chat");
 	}
 
@@ -84,6 +85,7 @@ public class Server implements Runnable {
 		keepRunning = false;
 
 		// Close all active client connections
+		// Runs a for each loop to close all the connections 
 		for (ConnectionHandler ch : clientConnections) {
 			try {
 				ch.closeConnection();
@@ -103,13 +105,19 @@ public class Server implements Runnable {
         try {
             choice = menu.start();
             if (choice == 1) {
-                System.out.println("Type 'shutdown' to shutdown server");
+            	ConsoleUtils.printHeader("Type 'shutdown' to shutdown server");
 
                 // Use the PortInputHandler to get a valid port number
-                ServerPortHandler portInputHandler = new ServerPortHandler();
+                // Thgis class runs all the validations for the server port input
+                ServerPortHandler portInputHandler = new ServerPortHandler(input);
                 int port = portInputHandler.getPortInput();
 
+                // Create new server object with the returned port number
                 Server server = new Server(port);
+                // Use a seperate thread here to  run the method in the server class 
+                // This means that the main thread will not be affected which allows the user to
+                // shutdown the server with a command.
+                // This allow the users to recieve a message that the server is shutting down
                 Thread serverThread = new Thread(server);
                 serverThread.start();
 
@@ -117,12 +125,13 @@ public class Server implements Runnable {
                     String command = input.next();
                     if ("shutdown".equalsIgnoreCase(command)) {
                         server.shutdown();
+                        
                         break; // Exit the loop and stop the program
                     }
                 }
 
             } else {
-                System.out.println("Please select a valid option");
+            	ConsoleUtils.printPrompt("Please select a valid option");
                 menu.start();
             }
 

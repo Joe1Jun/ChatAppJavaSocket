@@ -1,14 +1,15 @@
 package ie.atu.sw;
 
-import java.io.PrintWriter;
-
+// This class was created as part of my project from the summer 2023 for the OOP module delivered by 
+// John Healy.
 
 public class ConsoleUtils {
 	
 	
 	
 	
-    public static void printlnColored(PrintWriter out,String message, ConsoleColour colour) {
+	 
+    public static void printlnColored(String message, ConsoleColour colour) {
         System.out.print(colour);
         System.out.println(message);
         System.out.print(ConsoleColour.RESET);
@@ -17,29 +18,29 @@ public class ConsoleUtils {
     
     
     // Method to print error messages (Red color)
-    public static void printError(PrintWriter out, String message) {
-        printlnColored(out,message, ConsoleColour.RED_BRIGHT);
+    public static void printError(String message) {
+        printlnColored(message, ConsoleColour.RED_BRIGHT);
     }
     
-    
+   
 
     // Method to print success messages (Green color)
-    public static void printSuccess(PrintWriter out,String message) {
-        printlnColored(out,message, ConsoleColour.GREEN);
+    public static void printSuccess(String message) {
+        printlnColored(message, ConsoleColour.GREEN);
     }
     
-   
+  
 
    
-    public static void printPrompt(PrintWriter out,String message) {
-        printlnColored(out,message, ConsoleColour.YELLOW_BRIGHT);
+    public static void printPrompt(String message) {
+        printlnColored(message, ConsoleColour.YELLOW_BRIGHT);
     }
 
-   
+    
 
     
-    public static void printHeader(PrintWriter out,String message) {
-        printlnColored(out,message, ConsoleColour.CYAN);
+    public static void printHeader(String message) {
+        printlnColored(message, ConsoleColour.CYAN);
     }
 
 
